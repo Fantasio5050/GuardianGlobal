@@ -51,18 +51,20 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: camarol2025
       POSTGRES_DB: mailadmin
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
 
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: pgadmin
+  adminer:
+    image: adminer
+    container_name: adminer
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@pgadmin.local
-      PGADMIN_DEFAULT_PASSWORD: admin
+      ADMINER_DEFAULT_SERVER: db
+      ADMINER_DESIGN: "pepa-linha"
     ports:
-      - "5050:80"
+      - "8080:8080"
     depends_on:
       - db
     restart: unless-stopped
