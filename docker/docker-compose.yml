@@ -1,0 +1,73 @@
+services:
+  mailserver:
+    image: mailserver/docker-mailserver:latest
+    hostname: mail
+    domainname: camarol.local
+    ports:
+      - "25:25"
+      - "143:143"
+      - "587:587"
+      - "993:993"
+    volumes:
+      - maildata:/var/mail
+      - mailstate:/var/mail-state
+      - ./config:/tmp/docker-mailserver
+    environment:
+      LOG_LEVEL: info
+      ENABLE_SPAMASSASSIN: 1
+      ENABLE_CLAMAV: 1
+      ENABLE_FAIL2BAN: 1
+      ENABLE_POSTGREY: 1
+      ONE_DIR: 1
+      SSL_TYPE:
+    cap_add:
+      - NET_ADMIN
+      - SYS_PTRACE
+    restart: unless-stopped
+
+  admin-backend:
+    build:
+      context: ./backend
+    ports:
+      - "5000:5000"
+    environment:
+      DATABASE_URI: postgresql://admin:camarol2025@db/mailadmin
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  admin-frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - admin-backend
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: camarol2025
+      POSTGRES_DB: mailadmin
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@pgadmin.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    restart: unless-stopped
+
+volumes:
+  maildata:
+  mailstate:
+  postgres_data:
