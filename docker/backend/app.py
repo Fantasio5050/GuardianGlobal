@@ -1,10 +1,11 @@
-
 import smtplib
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS  # Ajout de l'importation de CORS
 import os
 
 app = Flask(__name__)
+CORS(app)  # Initialisation de CORS pour l'application Flask
 
 # Configuration de la base de données PostgreSQL via SQLAlchemy
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://admin:camarol2025@db/mailadmin'
@@ -243,7 +244,15 @@ def delete_log(id):
     db.session.commit()
     return jsonify({'message': 'Log supprimé'}), 200
 
-### SEEDING DES DONNEES ###
+# Endpoint pour récupérer tous les codes d'erreur
+@app.route('/error-codes', methods=['GET'])
+def get_error_codes():
+    error_codes = ErrorCode.query.all()
+    return jsonify([{
+        'id': e.id, 'category': e.category, 'code': e.code
+    } for e in error_codes])
+
+### SEEDING DES DONNEES YEP###
 def seed_data():
     """ Insère des données de test à la création de la base de données """
 
